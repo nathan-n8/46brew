@@ -1,0 +1,239 @@
+/* ===== Theme tokens (Light default) ===== */
+:root {
+  --bg:      #ffffff;
+  --panel:   #f2f2f7;
+  --text:    #1c1c1e;
+  --muted:   #6c6c70;
+  --border:  #d1d1d6;
+  --accent:  #007aff;
+
+  --spec-accent: #22c55e; /* green for icons */
+
+  --radius: 12px;
+  --shadow: 0 1px 2px rgba(0,0,0,.06), 0 3px 12px rgba(0,0,0,.08);
+
+  --space-1: .5rem;
+  --space-2: .75rem;
+  --space-3: 1rem;
+  --space-4: 1.25rem;
+
+  --font-s:  .95rem;
+  --font-m:  1rem;
+  --font-l:  clamp(1.2rem, 2.5vw, 1.6rem);
+
+  --anim-fast: 150ms;
+  --anim-med:  220ms;
+}
+
+/* Dark theme (toggle via [data-theme="dark"]) */
+html[data-theme="dark"] {
+  --bg:     #0f172a;
+  --panel:  #111827;
+  --text:   #e5e7eb;
+  --muted:  #9ca3af;
+  --border: #1f2937;
+  --accent: #0a84ff;
+  --shadow: 0 1px 2px rgba(0,0,0,.35), 0 6px 24px rgba(0,0,0,.35);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+               Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+* {
+  transition:
+    background-color var(--anim-fast) ease,
+    border-color var(--anim-fast) ease,
+    color var(--anim-fast) ease;
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+.container { max-width: 920px; margin: var(--space-4) auto; padding: 0 var(--space-3); }
+
+.app-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+h1 { margin: 0; font-size: var(--font-l); font-weight: 700; }
+.subtitle { margin: .25rem 0 0; }
+h2 { margin: 0 0 var(--space-2); font-size: 1.125rem; font-weight: 600; }
+h3 { margin: var(--space-3) 0 var(--space-2); font-size: 1rem; font-weight: 600; }
+.subtle { color: var(--muted); }
+
+/* Button (theme toggle) */
+.btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  padding: .6rem .85rem;
+  min-height: 40px;
+  border-radius: 12px;
+  cursor: pointer;
+  font: inherit;
+}
+html[data-theme="dark"] .btn { background: #0b1220; }
+
+/* Panels */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  margin: var(--space-3) 0;
+  box-shadow: var(--shadow);
+}
+
+/* SPECS — header + single-row items on desktop */
+.specs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(140px, 1fr)); /* 5 cols; Water Temp spans 2 */
+  gap: 0;
+  align-items: stretch;
+  row-gap: .25rem;
+}
+.specs-header {
+  grid-column: 1 / -1;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-weight: 800;
+  color: #2b3a4d;
+  padding-bottom: .25rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: .25rem;
+}
+html[data-theme="dark"] .specs-header { color: #d4d8de; }
+
+.spec {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: .6rem;
+  padding: .5rem .75rem;
+  border-left: 1px solid var(--border);
+}
+.spec:nth-child(2) { border-left: none; } /* first spec after header has no left border */
+.spec-ico {
+  grid-row: 1 / span 2;
+  font-size: 1.15rem;
+  color: var(--spec-accent);
+  align-self: start;
+}
+.spec-title { font-weight: 700; }
+.spec-value { color: var(--text); }
+
+/* Water Temp: extra width + no wrap on wide screens */
+.spec--wide { grid-column: span 2; }
+@media (min-width: 761px) {
+  .spec--wide .spec-value { white-space: nowrap; }
+}
+
+/* Mobile: stack specs vertically */
+@media (max-width: 760px) {
+  .specs {
+    grid-template-columns: 1fr;
+    row-gap: .5rem;
+  }
+  .spec { border-left: none; border-top: 1px solid var(--border); }
+  .spec:nth-child(2) { border-top: none; }
+  .spec--wide { grid-column: auto; }
+  .spec--wide .spec-value { white-space: normal; }
+}
+
+/* Form */
+.field { display: grid; gap: .4rem; }
+.field input {
+  width: 100%;
+  padding: .7rem .85rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+}
+html[data-theme="dark"] .field input { background: #0b1220; }
+
+.field input:focus-visible,
+.taste-btn:focus-visible,
+.body-btn:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* Inline result */
+.field-result {
+  margin-top: .35rem;
+  display: block;
+  font-size: var(--font-s);
+  color: var(--muted);
+}
+.field-result strong { font-weight: 600; color: var(--text); }
+
+/* Taste/Body groups — spaced buttons */
+.taste-group, .body-group {
+  display: flex;
+  width: 100%;
+  gap: .5rem;
+  margin-top: .5rem;
+}
+.taste-btn, .body-btn {
+  flex: 1;
+  text-align: center;
+  appearance: none;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  padding: .75rem .9rem;
+  min-height: 44px;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1.2;
+  border-radius: 12px;
+}
+html[data-theme="dark"] .taste-btn,
+html[data-theme="dark"] .body-btn { background: #0b1220; }
+
+.taste-btn:hover, .body-btn:hover { background: rgba(0,0,0,.04); }
+html[data-theme="dark"] .taste-btn:hover,
+html[data-theme="dark"] .body-btn:hover { background: rgba(255,255,255,.06); }
+
+.taste-btn.is-selected, .body-btn.is-selected {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--accent);
+}
+
+/* Timeline (5 columns: Pour # | Start | Amount | % | Pour to) */
+.timeline {
+  display: grid;
+  grid-template-columns: 70px 100px 100px 60px 120px;
+  gap: .5rem .75rem;
+  align-items: center;
+}
+.timeline .th {
+  font-weight: 600;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: .25rem;
+}
+.timeline .row {
+  padding: .25rem 0;
+  border-bottom: 1px dashed color-mix(in srgb, var(--border) 70%, transparent);
+}
+.timeline .amt { font-weight: 600; }
+.timeline .muted { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+#timeline-panel h2 { margin-bottom: .25rem; }
+#timeline-sub { margin: 0 0 1rem; }
+.timeline .row strong { font-weight: 700; }
