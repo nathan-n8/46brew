@@ -319,3 +319,9 @@ html[data-theme="dark"] .body-btn:hover { background: rgba(255,255,255,.06); }
 @media (max-width: 760px) {
   .specs .spec .spec-value { white-space: normal; }
 }
+
+/* Simple invisible footer to add extra space at the bottom */
+.app-footer-space {
+  height: clamp(32px, 6vh, 80px);
+  padding-bottom: env(safe-area-inset-bottom);
+}
