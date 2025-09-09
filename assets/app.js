@@ -1,12 +1,11 @@
 /**
  * 46brew — app.js
- * - Specs in one row; Grind icon via Font Awesome (fa-braille)
- * - Subtitle under H1
- * - Timeline subheader: “Taste: … • Body: … • Water: …”
- * - Footer removed in HTML
  * - Light mode default + Dark toggle (persisted)
+ * - Specs panel (single row; grind icon via Font Awesome)
  * - Coffee/Water specs auto-sync with inputs
  * - Pouring Timeline (Start only, whole-number %)
+ * - Timeline subheader: “Taste: … • Body: … • Water: …”
+ * - Sticky Stopwatch with Start/Pause/Reset, Sound, row highlighting, beeps at pour starts
  * - P1/P2 depend on Taste; later pours depend on Body with fixed start times
  */
 
@@ -40,6 +39,25 @@ const specWater  = $('#spec-water');
 // Buttons
 const tasteButtons = $$('[data-taste]');
 const bodyButtons  = $$('[data-body]');
+
+// Stopwatch refs
+const swDisplay = document.getElementById('sw-display');
+const swNext    = document.getElementById('sw-next');
+const swStart   = document.getElementById('sw-start');
+const swReset   = document.getElementById('sw-reset');
+const swSound   = document.getElementById('sw-sound');
+
+// Stopwatch state
+let swRunning = false;
+let swStartMs = 0;      // timestamp when started (ms)
+let swHeldMs  = 0;      // accumulated paused time (ms)
+let swTimerId = null;
+let audioCtx  = null;
+let lastBeepAtSec = null;
+
+// timeline starts cached so stopwatch can react
+let cachedStartsSec = [];   // e.g. [0,45,90,...]
+let totalWaterCached = 0;
 
 // ===== Theme handling =====
 function setTheme(theme) {
@@ -143,6 +161,80 @@ function plan46(totalWater, taste, body) {
   return { pours: grams, starts };
 }
 
+// ===== Stopwatch helpers =====
+function elapsedMs() {
+  return swRunning ? (Date.now() - swStartMs + swHeldMs) : swHeldMs;
+}
+function formatMMSS(ms) {
+  const sec = Math.floor(ms / 1000);
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+function nextPourInfo(elSec) {
+  for (let i = 0; i < cachedStartsSec.length; i++) {
+    if (cachedStartsSec[i] >= elSec) {
+      const diff = cachedStartsSec[i] - elSec;
+      return { index: i + 1, at: cachedStartsSec[i], in: diff };
+    }
+  }
+  const diff = Math.max(0, REMOVE_AT - elSec);
+  return { index: 'Remove dripper', at: REMOVE_AT, in: diff };
+}
+function updateStopwatchHints(ms) {
+  if (!swDisplay || !swNext) return;
+  swDisplay.textContent = formatMMSS(ms);
+  const elSec = Math.floor(ms / 1000);
+  const info = nextPourInfo(elSec);
+  const at = `${Math.floor(info.at / 60)}:${String(info.at % 60).padStart(2,'0')}`;
+  const inS = `${info.in}s`;
+  swNext.textContent =
+    (typeof info.index === 'number')
+      ? `Next: #${info.index} at ${at} (in ${inS})`
+      : `${info.index} at ${at} (in ${inS})`;
+  highlightCurrentPour(elSec);
+}
+function highlightCurrentPour(elSec) {
+  // Determine current pour: last start <= elapsed
+  let idx = -1;
+  for (let i = 0; i < cachedStartsSec.length; i++) {
+    if (cachedStartsSec[i] <= elSec) idx = i; else break;
+  }
+  const cells = Array.from(document.querySelectorAll('#timeline .row'));
+  cells.forEach(c => c.classList.remove('is-current'));
+  if (idx < 0) return;
+  // Each pour row = 5 cells; headers are not .row
+  const start = idx * 5;
+  for (let j = start; j < start + 5 && j < cells.length; j++) {
+    cells[j].classList.add('is-current');
+  }
+}
+function beep() {
+  if (!swSound?.checked) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sine';
+    o.frequency.value = 880;
+    g.gain.value = 0.001;
+    o.connect(g); g.connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+    g.gain.exponentialRampToValueAtTime(0.12, now + 0.01);
+    o.start(now);
+    o.stop(now + 0.15);
+  } catch {}
+}
+function tick() {
+  const ms = elapsedMs();
+  updateStopwatchHints(ms);
+  const elSec = Math.floor(ms / 1000);
+  if (cachedStartsSec.includes(elSec) && elSec !== lastBeepAtSec) {
+    lastBeepAtSec = elSec;
+    beep();
+  }
+}
+
 // ===== Render =====
 function render() {
   const coffee = Number(coffeeInput?.value);
@@ -174,7 +266,13 @@ function render() {
   }
 
   const { pours, starts } = plan46(rounded, taste, body);
+
+  // Cache starts for stopwatch logic
+  cachedStartsSec = starts.slice();
+  totalWaterCached = rounded;
+
   renderTimeline(pours, starts, rounded);
+  updateStopwatchHints(elapsedMs()); // keep hint fresh if running
 }
 
 function renderTimeline(pours, starts, totalWater) {
@@ -205,7 +303,7 @@ function renderTimeline(pours, starts, totalWater) {
   // Final action row: remove dripper at 3:30
   html += `
     <div class="row"><strong>Remove dripper</strong></div>
-    <div class="row muted">3:30</div>
+    <div class="row muted">${mmss(REMOVE_AT)}</div>
     <div class="row muted">—</div>
     <div class="row muted">—</div>
     <div class="row amt">${totalWater} g</div>
@@ -233,6 +331,43 @@ document.querySelectorAll('[data-body]').forEach(btn => {
   });
 });
 
+// Stopwatch controls
+swStart?.addEventListener('click', () => {
+  if (!swRunning) {
+    // start
+    swRunning = true;
+    swStartMs = Date.now();
+    swStart.setAttribute('aria-pressed', 'true');
+    swStart.textContent = 'Pause';
+    if (!swTimerId) swTimerId = setInterval(tick, 200);
+    // prime audio after user gesture
+    if (swSound?.checked && !audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch {}
+    }
+  } else {
+    // pause
+    swRunning = false;
+    swHeldMs = elapsedMs();
+    swStart.setAttribute('aria-pressed', 'false');
+    swStart.textContent = 'Start';
+  }
+  tick();
+});
+
+swReset?.addEventListener('click', () => {
+  swRunning = false;
+  swHeldMs = 0;
+  lastBeepAtSec = null;
+  swStart.setAttribute('aria-pressed', 'false');
+  swStart.textContent = 'Start';
+  updateStopwatchHints(0);
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === ' ' || e.code === 'Space') { e.preventDefault(); swStart?.click(); }
+  if (e.key.toLowerCase() === 'r') { e.preventDefault(); swReset?.click(); }
+});
+
 // ===== Init =====
 (function init() {
   // Theme
@@ -242,6 +377,9 @@ document.querySelectorAll('[data-body]').forEach(btn => {
   // Buttons
   updateTasteUI(getTaste());
   updateBodyUI(getBody());
+
+  // Stopwatch interval
+  if (!swTimerId) swTimerId = setInterval(tick, 200);
 
   // First paint
   render();

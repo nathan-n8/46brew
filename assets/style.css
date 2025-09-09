@@ -7,7 +7,7 @@
   --border:  #d1d1d6;
   --accent:  #007aff;
 
-  --spec-accent: #22c55e; /* green for icons */
+  --spec-accent: #22c55e;
 
   --radius: 12px;
   --shadow: 0 1px 2px rgba(0,0,0,.06), 0 3px 12px rgba(0,0,0,.08);
@@ -25,7 +25,7 @@
   --anim-med:  220ms;
 }
 
-/* Dark theme (toggle via [data-theme="dark"]) */
+/* Dark theme */
 html[data-theme="dark"] {
   --bg:     #0f172a;
   --panel:  #111827;
@@ -36,8 +36,10 @@ html[data-theme="dark"] {
   --shadow: 0 1px 2px rgba(0,0,0,.35), 0 6px 24px rgba(0,0,0,.35);
 }
 
+/* ===== Base ===== */
 * { box-sizing: border-box; }
 html, body { height: 100%; }
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
@@ -47,6 +49,7 @@ body {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
 }
+
 * {
   transition:
     background-color var(--anim-fast) ease,
@@ -71,7 +74,7 @@ h2 { margin: 0 0 var(--space-2); font-size: 1.125rem; font-weight: 600; }
 h3 { margin: var(--space-3) 0 var(--space-2); font-size: 1rem; font-weight: 600; }
 .subtle { color: var(--muted); }
 
-/* Button (theme toggle) */
+/* ===== Buttons / Panels ===== */
 .btn {
   appearance: none;
   border: 1px solid var(--border);
@@ -85,7 +88,6 @@ h3 { margin: var(--space-3) 0 var(--space-2); font-size: 1rem; font-weight: 600;
 }
 html[data-theme="dark"] .btn { background: #0b1220; }
 
-/* Panels */
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -95,25 +97,34 @@ html[data-theme="dark"] .btn { background: #0b1220; }
   box-shadow: var(--shadow);
 }
 
-/* SPECS — header + single-row items on desktop */
-.specs {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(140px, 1fr)); /* 5 cols; Water Temp spans 2 */
-  gap: 0;
-  align-items: stretch;
-  row-gap: .25rem;
-}
-.specs-header {
-  grid-column: 1 / -1;
+/* ===== Section labels (SPECS / Coffee Weight / Pouring Timeline) ===== */
+.specs-header,
+.section-bar{
+  display: block;
   text-transform: uppercase;
   letter-spacing: .08em;
   font-weight: 800;
   color: #2b3a4d;
-  padding-bottom: .25rem;
+  padding-bottom: .5rem;
+  margin-bottom: .75rem;
   border-bottom: 1px solid var(--border);
-  margin-bottom: .25rem;
 }
-html[data-theme="dark"] .specs-header { color: #d4d8de; }
+html[data-theme="dark"] .specs-header,
+html[data-theme="dark"] .section-bar { color: #d4d8de; }
+
+/* Make the SPECS label span the full grid width */
+.specs-header { grid-column: 1 / -1; }
+
+/* ===== SPECS grid — exactly 4 columns on desktop =====
+   Coffee | Water | Water Temp | Grind
+*/
+.specs{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  align-items: stretch;
+  column-gap: 0;
+  row-gap: .25rem;
+}
 
 .spec {
   display: grid;
@@ -123,23 +134,18 @@ html[data-theme="dark"] .specs-header { color: #d4d8de; }
   padding: .5rem .75rem;
   border-left: 1px solid var(--border);
 }
-.spec:nth-child(2) { border-left: none; } /* first spec after header has no left border */
-.spec-ico {
-  grid-row: 1 / span 2;
-  font-size: 1.15rem;
-  color: var(--spec-accent);
-  align-self: start;
-}
+.spec:nth-child(2) { border-left: none; } /* first spec after header */
+
+.spec-ico { grid-row: 1 / span 2; font-size: 1.15rem; color: var(--spec-accent); align-self: start; }
 .spec-title { font-weight: 700; }
 .spec-value { color: var(--text); }
 
-/* Water Temp: extra width + no wrap on wide screens */
-.spec--wide { grid-column: span 2; }
+/* Keep the Grind value on one visual line on desktop */
 @media (min-width: 761px) {
-  .spec--wide .spec-value { white-space: nowrap; }
+  #spec-grind { white-space: nowrap; }
 }
 
-/* Mobile: stack specs vertically */
+/* Stack to one column on mobile for readability */
 @media (max-width: 760px) {
   .specs {
     grid-template-columns: 1fr;
@@ -147,12 +153,12 @@ html[data-theme="dark"] .specs-header { color: #d4d8de; }
   }
   .spec { border-left: none; border-top: 1px solid var(--border); }
   .spec:nth-child(2) { border-top: none; }
-  .spec--wide { grid-column: auto; }
-  .spec--wide .spec-value { white-space: normal; }
 }
 
-/* Form */
+/* ===== Form ===== */
 .field { display: grid; gap: .4rem; }
+.field .section-bar { margin-bottom: .4rem; }
+
 .field input {
   width: 100%;
   padding: .7rem .85rem;
@@ -214,7 +220,7 @@ html[data-theme="dark"] .body-btn:hover { background: rgba(255,255,255,.06); }
   border-color: var(--accent);
 }
 
-/* Timeline (5 columns: Pour # | Start | Amount | % | Pour to) */
+/* ===== Timeline (5 columns) ===== */
 .timeline {
   display: grid;
   grid-template-columns: 70px 100px 100px 60px 120px;
@@ -234,6 +240,35 @@ html[data-theme="dark"] .body-btn:hover { background: rgba(255,255,255,.06); }
 .timeline .amt { font-weight: 600; }
 .timeline .muted { color: var(--muted); font-variant-numeric: tabular-nums; }
 
-#timeline-panel h2 { margin-bottom: .25rem; }
+#timeline-panel .section-bar { margin-bottom: .5rem; }
 #timeline-sub { margin: 0 0 1rem; }
 .timeline .row strong { font-weight: 700; }
+
+/* ===== Sticky stopwatch ===== */
+.sticky {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--border);
+}
+
+#stopwatch-panel { display: grid; gap: .5rem; }
+.sw-row { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.sw-time { font-weight: 800; letter-spacing: .02em; font-size: clamp(1.6rem, 5vw, 2.2rem); }
+.sw-next { font-variant-numeric: tabular-nums; }
+
+.sw-controls { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.sw-toggle { display: inline-flex; align-items: center; gap: .4rem; font-size: .95rem; }
+
+.timeline .row.is-current {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+@media (min-width: 761px) {
+  .specs .spec .spec-value { white-space: nowrap; }
+}
+@media (max-width: 760px) {
+  .specs .spec .spec-value { white-space: normal; }
+}

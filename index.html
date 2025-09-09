@@ -24,7 +24,7 @@
         </button>
       </header>
 
-      <!-- SPECS panel (single row on desktop) -->
+      <!-- SPECS panel -->
       <section class="panel specs" aria-label="Brewing specs">
         <div class="specs-header">Specs</div>
 
@@ -40,14 +40,14 @@
           <div class="spec-value"><span id="spec-water">300g</span></div>
         </div>
 
-        <div class="spec spec--wide">
+        <div class="spec">
           <i class="fa-solid fa-temperature-three-quarters spec-ico" aria-hidden="true"></i>
           <div class="spec-title">Water Temp</div>
-          <div class="spec-value">
-            199.4°F (93°C) <span class="muted">light</span><br>
-            190°F (88°C) <span class="muted">medium</span><br>
-            181.4°F (83°C) <span class="muted">dark</span>
-          </div>
+            <div class="spec-value">
+              199.4°F (93°C)&nbsp;<span class="muted">light</span><br>
+              190°F (88°C)&nbsp;<span class="muted">medium</span><br>
+              181.4°F (83°C)&nbsp;<span class="muted">dark</span>
+            </div>
         </div>
 
         <div class="spec">
@@ -60,7 +60,9 @@
       <!-- Input panel -->
       <section class="panel">
         <form id="calc-form">
-          <label class="field">Coffee Weight (g)
+          <!-- Coffee Weight with section-bar styling -->
+          <label class="field" for="coffee">
+            <span class="section-bar">Coffee Weight</span>
             <input id="coffee" type="number" min="1" step="1" value="20" inputmode="numeric" />
             <output id="result" class="field-result" for="coffee" aria-live="polite" role="status">
               Water: —
@@ -68,8 +70,8 @@
           </label>
 
           <!-- Taste selector -->
-          <h3>Taste Preference</h3>
-          <div class="taste-group" role="group" aria-label="Taste Preference">
+          <h3 class="section-bar">Taste Preferences</h3>
+          <div class="taste-group" role="group" aria-label="Taste Preferences">
             <button type="button"
                     class="taste-btn is-selected"
                     data-taste="basic"
@@ -85,8 +87,8 @@
           </div>
 
           <!-- Body selector -->
-          <h3>Body Preference</h3>
-          <div class="body-group" role="group" aria-label="Body Preference">
+          <h3 class="section-bar">Body Preferences</h3>
+          <div class="body-group" role="group" aria-label="Body Preferences">
             <button type="button"
                     class="body-btn is-selected"
                     data-body="basic"
@@ -105,9 +107,25 @@
 
       <!-- Pouring Timeline -->
       <section class="panel" id="timeline-panel">
-        <h2>Pouring Timeline</h2>
+        <h2 class="section-bar">Pouring Timeline</h2>
         <p id="timeline-sub" class="subtle"></p>
         <div id="timeline" class="timeline"></div>
+      </section>
+
+      <!-- Stopwatch (sticky bottom) -->
+      <section class="panel sticky" id="stopwatch-panel" aria-label="Stopwatch">
+        <div class="sw-row">
+          <div class="sw-time" id="sw-display" aria-live="polite">0:00</div>
+          <div class="sw-next subtle" id="sw-next">Next: #1 at 0:00</div>
+        </div>
+        <div class="sw-controls">
+          <button id="sw-start" class="btn" type="button" aria-pressed="false">Start</button>
+          <button id="sw-reset" class="btn" type="button">Reset</button>
+          <label class="sw-toggle">
+            <input id="sw-sound" type="checkbox" checked>
+            <span>Sound</span>
+          </label>
+        </div>
       </section>
     </main>
 
