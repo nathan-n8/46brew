@@ -220,29 +220,76 @@ html[data-theme="dark"] .body-btn:hover { background: rgba(255,255,255,.06); }
   border-color: var(--accent);
 }
 
-/* ===== Timeline (5 columns) ===== */
+/* ===== Timeline (auto-shrink columns) ===== */
 .timeline {
+  /* Smoothly shrink text as the viewport narrows */
+  --tl-fs: clamp(0.82rem, 2.6vw, 1rem);
+  --tl-gap-x: .6rem;
+
   display: grid;
-  grid-template-columns: 70px 100px 100px 60px 120px;
-  gap: .5rem .75rem;
+
+  /* Columns clamp to their content but won’t exceed these caps.
+     The last column (Pour to) flexes to take any remaining space. */
+  grid-template-columns:
+    fit-content(72px)   /* Pour # */
+    fit-content(88px)   /* Start */
+    fit-content(110px)  /* Amount */
+    fit-content(70px)   /* % */
+    1fr;                /* Pour to */
+
+  gap: .5rem var(--tl-gap-x);
   align-items: center;
+  font-size: var(--tl-fs);
 }
+
 .timeline .th {
   font-weight: 600;
   color: var(--text);
   border-bottom: 1px solid var(--border);
   padding-bottom: .25rem;
+  min-width: 0; /* allow grid to shrink */
 }
+
 .timeline .row {
   padding: .25rem 0;
   border-bottom: 1px dashed color-mix(in srgb, var(--border) 70%, transparent);
+  min-width: 0; /* allow grid to shrink */
 }
-.timeline .amt { font-weight: 600; }
-.timeline .muted { color: var(--muted); font-variant-numeric: tabular-nums; }
 
+.timeline .amt { font-weight: 600; }
+
+/* Keep numerals tidy; prevent awkward wraps while still letting grid shrink */
+.timeline .muted,
+.timeline .amt {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Tighten spacing and caps further on very small screens */
+@media (max-width: 380px) {
+  .timeline {
+    --tl-fs: clamp(0.78rem, 3.2vw, 0.95rem);
+    --tl-gap-x: .5rem;
+    grid-template-columns:
+      fit-content(64px)   /* Pour # */
+      fit-content(76px)   /* Start */
+      fit-content(98px)   /* Amount */
+      fit-content(58px)   /* % */
+      1fr;                /* Pour to */
+    gap: .45rem var(--tl-gap-x);
+  }
+}
+
+/* Keep existing helpers */
 #timeline-panel .section-bar { margin-bottom: .5rem; }
 #timeline-sub { margin: 0 0 1rem; }
 .timeline .row strong { font-weight: 700; }
+
+/* Current-row highlight stays the same */
+.timeline .row.is-current {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
 
 /* ===== Sticky stopwatch ===== */
 .sticky {
