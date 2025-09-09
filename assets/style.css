@@ -320,8 +320,20 @@ html[data-theme="dark"] .body-btn:hover { background: rgba(255,255,255,.06); }
   .specs .spec .spec-value { white-space: normal; }
 }
 
-/* Simple invisible footer to add extra space at the bottom */
-.app-footer-space {
-  height: clamp(32px, 6vh, 80px);
-  padding-bottom: env(safe-area-inset-bottom);
+/* Footer */
+.app-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: .5rem;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: .01em;
+  padding: .75rem 0 calc(env(safe-area-inset-bottom) + .25rem);
+  margin-top: .5rem;
+  border-top: 1px solid var(--border);
+}
+.app-footer .fa-mug-hot {
+  font-size: 1.1rem;
+  color: var(--spec-accent); /* matches your Specs icon accent */
 }
