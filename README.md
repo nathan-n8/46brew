@@ -141,7 +141,3 @@ PRs are welcome! Please:
 	1.	Keep the UI simple and mobile-first.
 	2.	Maintain accessibility (labels, focus, color contrast).
 	3.	Add comments for any new calculations or timeline logic.
-
-⸻
-
-Happy brewing! If you want, I can add a Reset button or a Timer panel next.
