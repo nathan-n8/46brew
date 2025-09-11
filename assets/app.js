@@ -57,6 +57,7 @@ let lastBeepAtSec = null;
 
 // timeline starts cached so stopwatch can react
 let cachedStartsSec = [];   // e.g. [0,45,90,...]
+let cachedPourTo    = []; 
 let totalWaterCached = 0;
 
 // ===== Theme handling =====
@@ -184,14 +185,22 @@ function nextPourInfo(elSec) {
 function updateStopwatchHints(ms) {
   if (!swDisplay || !swNext) return;
   swDisplay.textContent = formatMMSS(ms);
+
   const elSec = Math.floor(ms / 1000);
-  const info = nextPourInfo(elSec);
-  const at = `${Math.floor(info.at / 60)}:${String(info.at % 60).padStart(2,'0')}`;
-  const inS = `${info.in}s`;
-  swNext.textContent =
-    (typeof info.index === 'number')
-      ? `Next: #${info.index} at ${at} (in ${inS})`
-      : `${info.index} at ${at} (in ${inS})`;
+  const info  = nextPourInfo(elSec);
+  const inS   = `${info.in}s`;
+
+  if (typeof info.index === 'number') {
+    // “Pour to” is the cumulative after this pour (#index)
+    const pourTo = cachedPourTo?.[info.index - 1];
+    swNext.textContent = (Number.isFinite(pourTo))
+      ? `Next, Pour to ${pourTo} g (in ${inS})`
+      : `Next, Pour #${info.index} (in ${inS})`;
+  } else {
+    // Final cue (e.g., Remove dripper)
+    swNext.textContent = `Next, ${info.index} (in ${inS})`;
+  }
+
   highlightCurrentPour(elSec);
 }
 function highlightCurrentPour(elSec) {
@@ -267,12 +276,17 @@ function render() {
 
   const { pours, starts } = plan46(rounded, taste, body);
 
-  // Cache starts for stopwatch logic
+  // Cache starts and cumulative “pour to” amounts
   cachedStartsSec = starts.slice();
+  cachedPourTo = (() => {
+    let cum = 0, out = [];
+    for (const g of pours) { cum += g; out.push(cum); }
+    return out;
+  })();
   totalWaterCached = rounded;
 
   renderTimeline(pours, starts, rounded);
-  updateStopwatchHints(elapsedMs()); // keep hint fresh if running
+  updateStopwatchHints(elapsedMs());
 }
 
 function renderTimeline(pours, starts, totalWater) {
@@ -345,9 +359,10 @@ swStart?.addEventListener('click', () => {
       try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch {}
     }
   } else {
-    // pause
+    // pause — accumulate elapsed BEFORE stopping
+    const now = Date.now();
+    swHeldMs += now - swStartMs;
     swRunning = false;
-    swHeldMs = elapsedMs();
     swStart.setAttribute('aria-pressed', 'false');
     swStart.textContent = 'Start';
   }
