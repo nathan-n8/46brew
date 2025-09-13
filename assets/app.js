@@ -21,6 +21,7 @@ const REMOVE_AT = 210;       // 3:30
 const THEME_KEY = 'theme';
 const TASTE_KEY = 'taste';   // 'basic' | 'sweet' | 'acid'
 const BODY_KEY  = 'body';    // 'basic' | 'stronger' | 'lighter'
+const COFFEE_KEY = 'coffee_g';
 
 // ===== DOM =====
 const $  = (sel) => document.querySelector(sel);
@@ -327,7 +328,13 @@ function renderTimeline(pours, starts, totalWater) {
 }
 
 // ===== Events =====
-coffeeInput?.addEventListener('input', render);
+coffeeInput?.addEventListener('input', () => {
+  const n = Number(coffeeInput.value);
+  if (Number.isFinite(n) && n > 0) {
+    localStorage.setItem(COFFEE_KEY, String(n));
+  }
+  render();
+});
 
 document.querySelectorAll('[data-taste]').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -392,6 +399,12 @@ document.addEventListener('keydown', (e) => {
   // Buttons
   updateTasteUI(getTaste());
   updateBodyUI(getBody());
+
+  // Restore saved coffee weight (if valid)
+  const savedCoffee = localStorage.getItem(COFFEE_KEY);
+  if (savedCoffee && Number(savedCoffee) > 0) {
+    coffeeInput.value = savedCoffee;
+  }
 
   // Stopwatch interval
   if (!swTimerId) swTimerId = setInterval(tick, 200);
