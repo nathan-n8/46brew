@@ -222,64 +222,62 @@ html[data-theme="dark"] .body-btn:hover { background: rgba(255,255,255,.06); }
   border-color: var(--accent);
 }
 
-/* ===== Timeline (auto-shrink columns) ===== */
-.timeline {
-  /* Smoothly shrink text as the viewport narrows */
-  --tl-fs: clamp(0.82rem, 2.6vw, 1rem);
-  --tl-gap-x: .6rem;
-
-  display: grid;
-
-  /* Columns clamp to their content but won’t exceed these caps.
-     The last column (Pour to) flexes to take any remaining space. */
-  grid-template-columns:
-    fit-content(72px)   /* Pour # */
-    fit-content(88px)   /* Start */
-    fit-content(110px)  /* Amount */
-    fit-content(70px)   /* % */
-    1fr;                /* Pour to */
-
-  gap: .5rem var(--tl-gap-x);
-  align-items: center;
-  font-size: var(--tl-fs);
+/* ===== New semantic timeline table ===== */
+.timeline-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;                 /* let the browser pick smart widths */
+  font-size: clamp(1rem, 2.2vw, 1.15rem);
 }
 
-.timeline .th {
-  font-weight: 600;
-  color: var(--text);
+.timeline-table colgroup col { width: auto; } /* allows our hints below to guide width */
+
+.timeline-table th,
+.timeline-table td {
+  padding: .5rem .4rem;
   border-bottom: 1px solid var(--border);
-  padding-bottom: .25rem;
-  min-width: 0; /* allow grid to shrink */
+  vertical-align: middle;
+  min-width: 0;                        /* prevent overflow in narrow viewports */
 }
 
-.timeline .row {
-  padding: .25rem 0;
-  border-bottom: 1px dashed color-mix(in srgb, var(--border) 70%, transparent);
-  min-width: 0; /* allow grid to shrink */
+/* Center headers only */
+.timeline-table thead th { text-align: center; font-weight: 600; }
+
+/* Align columns: # left, Start center; numbers right */
+.timeline-table tbody td:nth-child(1) { text-align: left; }   /* Pour # */
+.timeline-table tbody td:nth-child(2) { text-align: center; } /* Start */
+.timeline-table tbody td:nth-child(3),
+.timeline-table tbody td:nth-child(4),
+.timeline-table tbody td:nth-child(5) { text-align: right; }  /* Amount, %, Pour to */
+
+/* Numeric niceties */
+.timeline-table td {
+  font-variant-numeric: tabular-nums;  /* aligned digits */
+  white-space: nowrap;                  /* keep 1:30 / 300 g / 20% on one line */
 }
 
-.timeline .amt { font-weight: 600; }
-
-/* Keep numerals tidy; prevent awkward wraps while still letting grid shrink */
-.timeline .muted,
-.timeline .amt {
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+/* Smaller, muted units so columns stay compact */
+.timeline-unit {
+  color: var(--muted);
+  font-size: .9em;
+  margin-left: .15rem;
 }
 
-/* Tighten spacing and caps further on very small screens */
+/* Current pour highlight */
+.timeline-table tbody tr.is-current {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+/* Extra-tight tweak for very small phones */
 @media (max-width: 380px) {
-  .timeline {
-    --tl-fs: clamp(0.78rem, 3.2vw, 0.95rem);
-    --tl-gap-x: .5rem;
-    grid-template-columns:
-      fit-content(64px)   /* Pour # */
-      fit-content(76px)   /* Start */
-      fit-content(98px)   /* Amount */
-      fit-content(58px)   /* % */
-      1fr;                /* Pour to */
-    gap: .45rem var(--tl-gap-x);
-  }
+  .timeline-table th,
+  .timeline-table td { padding: .4rem .35rem; }
+}
+
+/* Center-align the "Pour #" column (header + body) */
+.timeline-table thead th:nth-child(1),
+.timeline-table tbody td:nth-child(1) {
+  text-align: center;
 }
 
 /* Keep existing helpers */

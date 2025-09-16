@@ -217,14 +217,9 @@ function highlightCurrentPour(elSec) {
   for (let i = 0; i < cachedStartsSec.length; i++) {
     if (cachedStartsSec[i] <= elSec) idx = i; else break;
   }
-  const cells = Array.from(document.querySelectorAll('#timeline .row'));
-  cells.forEach(c => c.classList.remove('is-current'));
-  if (idx < 0) return;
-  // Each pour row = 5 cells; headers are not .row
-  const start = idx * 5;
-  for (let j = start; j < start + 5 && j < cells.length; j++) {
-    cells[j].classList.add('is-current');
-  }
+  const trs = Array.from(document.querySelectorAll('.timeline-table tbody tr'));
+  trs.forEach(tr => tr.classList.remove('is-current'));
+  if (idx >= 0 && idx < trs.length) trs[idx].classList.add('is-current');
 }
 function beep() {
   if (!swSound?.checked) return;
@@ -308,38 +303,58 @@ function render() {
 function renderTimeline(pours, starts, totalWater) {
   if (!timelineBox) return;
 
-  let html = `
-    <div class="th">Pour #</div>
-    <div class="th">Start</div>
-    <div class="th">Amount</div>
-    <div class="th">%</div>
-    <div class="th">Pour to</div>
-  `;
-
   let cumulative = 0;
+  let rows = '';
   pours.forEach((g, i) => {
     cumulative += g;
-    const pct = Math.round((g / totalWater) * 100); // whole number %
+    const pct = Math.round((g / totalWater) * 100); // whole-number %
 
-    html += `
-      <div class="row">#${i + 1}</div>
-      <div class="row muted">${mmss(starts[i])}</div>
-      <div class="row amt">${g} g</div>
-      <div class="row muted">${pct}%</div>
-      <div class="row amt">${cumulative} g</div>
+    rows += `
+      <tr>
+        <td>#${i + 1}</td>
+        <td>${mmss(starts[i])}</td>
+        <td>${g}<span class="timeline-unit">g</span></td>
+        <td>${pct}<span class="timeline-unit">%</span></td>
+        <td>${cumulative}<span class="timeline-unit">g</span></td>
+      </tr>
     `;
   });
 
   // Final action row: remove dripper at 3:30
-  html += `
-    <div class="row"><strong>Remove dripper</strong></div>
-    <div class="row muted">${mmss(REMOVE_AT)}</div>
-    <div class="row muted">—</div>
-    <div class="row muted">—</div>
-    <div class="row amt">${totalWater} g</div>
+  rows += `
+    <tr>
+      <td><strong>Remove</strong></td>
+      <td>${mmss(REMOVE_AT)}</td>
+      <td>—</td>
+      <td>—</td>
+      <td>${totalWater}<span class="timeline-unit">g</span></td>
+    </tr>
   `;
 
-  timelineBox.innerHTML = html;
+  timelineBox.innerHTML = `
+    <table class="timeline-table" aria-describedby="timeline-sub">
+      <!-- Column width hints: use character widths so they’re compact but steady -->
+      <colgroup>
+        <col style="width: 5ch;">  <!-- #  (#10 fits) -->
+        <col style="width: 5ch;">  <!-- Start (2:15) -->
+        <col style="width: 7ch;">  <!-- Amount (300 g) -->
+        <col style="width: 4ch;">  <!-- % (20%) -->
+        <col style="width: 8ch;">  <!-- Pour to (300 g) -->
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Pour #</th>
+          <th>Start</th>
+          <th>Amount</th>
+          <th>%</th>
+          <th>Pour to</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+  `;
 }
 
 // ===== Events =====
