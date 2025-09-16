@@ -81,13 +81,27 @@
       <section class="panel">
         <form id="calc-form">
           <!-- Coffee Weight with section-bar styling -->
-          <label class="field" for="coffee">
-            <span class="section-bar">Coffee Weight</span>
-            <input id="coffee" type="number" min="1" step="1" value="20" inputmode="numeric" />
-            <output id="result" class="field-result" for="coffee" aria-live="polite" role="status">
-              Water: —
-            </output>
-          </label>
+      <label class="field" for="coffee">
+        <span class="section-bar">Coffee Weight</span>
+
+        <div class="unit-field">
+          <input id="coffee"
+                type="number"
+                min="1"
+                step="1"
+                value="20"
+                inputmode="numeric"
+                placeholder="e.g., 20"
+                aria-describedby="coffee-help" />
+          <span class="unit-suffix" aria-hidden="true">g</span>
+        </div>
+
+        <p id="coffee-help" class="helper subtle">Units: grams (g)</p>
+
+        <output id="result" class="field-result" for="coffee" aria-live="polite" role="status">
+          Water: —
+        </output>
+      </label>
 
           <!-- Taste selector -->
           <h3 class="section-bar">Taste Preferences</h3>
@@ -138,6 +152,10 @@
           <div class="sw-time" id="sw-display" aria-live="polite">0:00</div>
           <div class="sw-next subtle" id="sw-next">Next: #1 at 0:00</div>
         </div>
+
+        <!-- NEW: current pour-to target -->
+         <div class="sw-current" id="sw-current">Pour to —</div>
+
         <div class="sw-controls">
           <button id="sw-start" class="btn" type="button" aria-pressed="false">Start</button>
           <button id="sw-reset" class="btn" type="button">Reset</button>

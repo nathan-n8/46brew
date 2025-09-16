@@ -339,3 +339,12 @@ html[data-theme="dark"] .body-btn:hover { background: rgba(255,255,255,.06); }
   font-size: 1.1rem;
   color: var(--spec-accent); /* matches your Specs icon accent */
 }
+
+.unit-field { position: relative; }
+.unit-field input { padding-right: 2.25rem; }           /* make room for the “g” */
+.unit-suffix {
+  position: absolute; right: .65rem; top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted); font-weight: 600; pointer-events: none;
+}
+.helper { margin-top: .25rem; font-size: .95rem; }

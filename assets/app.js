@@ -47,6 +47,7 @@ const swNext    = document.getElementById('sw-next');
 const swStart   = document.getElementById('sw-start');
 const swReset   = document.getElementById('sw-reset');
 const swSound   = document.getElementById('sw-sound');
+const swCurrent = document.getElementById('sw-current');
 
 // Stopwatch state
 let swRunning = false;
@@ -191,15 +192,21 @@ function updateStopwatchHints(ms) {
   const info  = nextPourInfo(elSec);
   const inS   = `${info.in}s`;
 
+  // “Next, pour to …” (lowercase p)
   if (typeof info.index === 'number') {
-    // “Pour to” is the cumulative after this pour (#index)
     const pourTo = cachedPourTo?.[info.index - 1];
-    swNext.textContent = (Number.isFinite(pourTo))
-      ? `Next, Pour to ${pourTo} g (in ${inS})`
-      : `Next, Pour #${info.index} (in ${inS})`;
+    swNext.textContent = Number.isFinite(pourTo)
+      ? `Next, pour to ${pourTo} g (in ${inS})`
+      : `Next, pour #${info.index} (in ${inS})`;
   } else {
-    // Final cue (e.g., Remove dripper)
     swNext.textContent = `Next, ${info.index} (in ${inS})`;
+  }
+
+  // Current pour’s target directly under the stopwatch
+  if (swCurrent) {
+    const curIdx = currentPourIndexFromSec(elSec);
+    const curPourTo = cachedPourTo?.[curIdx];
+    swCurrent.textContent = Number.isFinite(curPourTo) ? `Pour to ${curPourTo} g` : 'Pour to —';
   }
 
   highlightCurrentPour(elSec);
@@ -243,6 +250,14 @@ function tick() {
     lastBeepAtSec = elSec;
     beep();
   }
+}
+
+function currentPourIndexFromSec(elSec) {
+  let idx = -1;
+  for (let i = 0; i < cachedStartsSec.length; i++) {
+    if (cachedStartsSec[i] <= elSec) idx = i; else break;
+  }
+  return idx;
 }
 
 // ===== Render =====
