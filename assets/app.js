@@ -182,8 +182,9 @@ function nextPourInfo(elSec) {
     }
   }
   const diff = Math.max(0, REMOVE_AT - elSec);
-  return { index: 'Remove dripper', at: REMOVE_AT, in: diff };
+  return { index: 'remove dripper', at: REMOVE_AT, in: diff };
 }
+
 function updateStopwatchHints(ms) {
   if (!swDisplay || !swNext) return;
   swDisplay.textContent = formatMMSS(ms);
@@ -192,7 +193,7 @@ function updateStopwatchHints(ms) {
   const info  = nextPourInfo(elSec);
   const inS   = `${info.in}s`;
 
-  // “Next, pour to …” (lowercase p)
+  // “Next, pour to …” (lowercase p) OR “Next, Remove brewer …”
   if (typeof info.index === 'number') {
     const pourTo = cachedPourTo?.[info.index - 1];
     swNext.textContent = Number.isFinite(pourTo)
@@ -202,25 +203,45 @@ function updateStopwatchHints(ms) {
     swNext.textContent = `Next, ${info.index} (in ${inS})`;
   }
 
-  // Current pour’s target directly under the stopwatch
+  // Show current target under the stopwatch
   if (swCurrent) {
-    const curIdx = currentPourIndexFromSec(elSec);
-    const curPourTo = cachedPourTo?.[curIdx];
-    swCurrent.textContent = Number.isFinite(curPourTo) ? `Pour to ${curPourTo} g` : 'Pour to —';
+    if (elSec >= REMOVE_AT) {
+      swCurrent.textContent = 'Remove dripper';
+    } else {
+      const curIdx = (function currentPourIndexFromSec(s) {
+        let i = -1; for (let k = 0; k < cachedStartsSec.length; k++) {
+          if (cachedStartsSec[k] <= s) i = k; else break;
+        } return i;
+      })(elSec);
+      const curPourTo = cachedPourTo?.[curIdx];
+      swCurrent.textContent = Number.isFinite(curPourTo) ? `Pour to ${curPourTo} g` : 'Pour to —';
+    }
   }
 
   highlightCurrentPour(elSec);
 }
+
 function highlightCurrentPour(elSec) {
-  // Determine current pour: last start <= elapsed
+  const trs = Array.from(document.querySelectorAll('.timeline-table tbody tr'));
+  trs.forEach(tr => tr.classList.remove('is-current'));
+  if (!trs.length) return;
+
+  if (elSec >= REMOVE_AT) {
+    // highlight the final "Remove brewer" row
+    trs[trs.length - 1].classList.add('is-current');
+    return;
+  }
+
+  // Otherwise, highlight the most recent pour row
   let idx = -1;
   for (let i = 0; i < cachedStartsSec.length; i++) {
     if (cachedStartsSec[i] <= elSec) idx = i; else break;
   }
-  const trs = Array.from(document.querySelectorAll('.timeline-table tbody tr'));
-  trs.forEach(tr => tr.classList.remove('is-current'));
-  if (idx >= 0 && idx < trs.length) trs[idx].classList.add('is-current');
+  if (idx >= 0 && idx < trs.length - 1) {
+    trs[idx].classList.add('is-current');
+  }
 }
+
 function beep() {
   if (!swSound?.checked) return;
   try {
@@ -323,7 +344,7 @@ function renderTimeline(pours, starts, totalWater) {
   // Final action row: remove dripper at 3:30
   rows += `
     <tr>
-      <td><strong>Remove</strong></td>
+      <td><strong>Remove Dripper</strong></td>
       <td>${mmss(REMOVE_AT)}</td>
       <td>—</td>
       <td>—</td>
