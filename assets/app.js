@@ -344,7 +344,7 @@ function renderTimeline(pours, starts, totalWater) {
   // Final action row: remove dripper at 3:30
   rows += `
     <tr>
-      <td><strong>Remove Dripper</strong></td>
+      <td><strong>Remove<br>Dripper</strong></td>
       <td>${mmss(REMOVE_AT)}</td>
       <td>—</td>
       <td>—</td>
